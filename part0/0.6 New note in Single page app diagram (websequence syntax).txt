@@ -1,0 +1,13 @@
+note over browser:
+user enters note and clicks on save button
+end note
+
+note over browser:
+browser executes the 
+event handler (form.submit)
+that adds new note to the DOM
+and calls backend to add the note there as well
+end note
+
+browser->server: HTTP POST https://studies.cs.helsinki.fi/exampleapp/new_note_spa
+server-->browser: Json: "message":"note created"
