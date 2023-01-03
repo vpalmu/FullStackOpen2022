@@ -1,9 +1,11 @@
 browser->server: HTTP POST https://studies.cs.helsinki.fi/exampleapp/new_note
+
 note over server:
 execute backend code.
 save new note to data.json.
 return redirect request.
 end note
+
 server-->browser: redirect request to exampleapp/notes
 browser->server: HTTP GET https://studies.cs.helsinki.fi/exampleapp/notes
 server-->browser: HTML-code
