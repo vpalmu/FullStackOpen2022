@@ -1,5 +1,6 @@
 const Header = (props) => {
-    console.log('component: Header')
+    console.log('Header:')
+    console.log({props})
     return (
       <>
         <h1>{props.title}</h1>

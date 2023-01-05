@@ -1,5 +1,6 @@
 const Part = (props) => {
-    console.log('component: Part')
+  console.log('Part:')
+  console.log({props})
     return (
       <>
         <p>{props.part} - {props.exercises}</p>
