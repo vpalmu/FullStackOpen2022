@@ -1,8 +1,8 @@
-const Header = (props) => {
+const Header = ({course}) => {
     console.log('Header:')
-    console.log({props})
+    console.log(course)
 
-    const courseName = props.course.name
+    const courseName = course.name
 
     return (
       <>

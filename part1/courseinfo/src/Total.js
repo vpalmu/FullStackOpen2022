@@ -1,10 +1,10 @@
-const Total = (props) => {
+const Total = ({course}) => {
   console.log('Total:')
-  console.log({props})
+  console.log(course)
 
-  const qtyExercisesPart1 = props.course.parts[0].exercises
-  const qtyExercisesPart2 = props.course.parts[1].exercises
-  const qtyExercisesPart3 = props.course.parts[2].exercises
+  const qtyExercisesPart1 = course.parts[0].exercises
+  const qtyExercisesPart2 = course.parts[1].exercises
+  const qtyExercisesPart3 = course.parts[2].exercises
 
   return (
       <>
