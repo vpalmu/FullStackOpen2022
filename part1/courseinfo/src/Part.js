@@ -1,9 +1,12 @@
 const Part = (props) => {
   console.log('Part:')
   console.log({props})
-    return (
+
+  const { name, nbrOfExercises } = props
+
+  return (
       <>
-        <p>{props.part} - {props.exercises}</p>
+        <p>{name} - {nbrOfExercises}</p>
       </>
     )
   }

@@ -3,11 +3,20 @@ import Part from "./Part"
 const Content = (props) => {
   console.log('Content:')
   console.log({props})
-    return (
+
+  const namePart1 = props.course.parts[0].name
+  const namePart2 = props.course.parts[1].name
+  const namePart3 = props.course.parts[2].name
+
+  const nbrExercisesPart1 = props.course.parts[0].exercises
+  const nbrExercisesPart2 = props.course.parts[1].exercises
+  const nbrExercisesPart3 = props.course.parts[2].exercises
+
+  return (
       <>
-        <Part part={props.part1} exercises={props.exercises1} />
-        <Part part={props.part2} exercises={props.exercises2} />
-        <Part part={props.part3} exercises={props.exercises3} />
+        <Part name={namePart1} nbrOfExercises={nbrExercisesPart1} />
+        <Part name={namePart2} nbrOfExercises={nbrExercisesPart2} />
+        <Part name={namePart3} nbrOfExercises={nbrExercisesPart3} />
       </>
     )
   }
