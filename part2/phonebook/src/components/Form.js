@@ -1,3 +1,5 @@
+import React from 'react'
+
 const Form = ({ name, number, onNameEdit, onNumberEdit, onAddClick }) => {
     return(
         <form onSubmit={onAddClick}>

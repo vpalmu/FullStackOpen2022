@@ -1,20 +1,17 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
+import React from 'react'
 import Filter from './components/Filter'
 import Form from './components/Form'
 import Person from './components/Person'
 import Title from './components/Title'
+import axios from 'axios'
 
 const App = () => {
   // States
-  const [persons, setPersons] = useState(
-    [
-      { id: 1, name: 'Arto Hellas', number: '219384327' },
-      { id: 2, name: 'Vesa Palmu' , number: '4554-45647' }
-    ]
-  )
+  const [persons, setPersons] = useState([])
   const [newName, setNewName] = useState('')
   const [newNumber, setNewNumber] = useState('')
-  const [nextId, setNextId] = useState(3)
+  const [nextId, setNextId] = useState(5)
   const [filterBy, setFilterBy] = useState('')
 
   // Events
@@ -60,7 +57,22 @@ const App = () => {
           person => person.name.toLowerCase()
                                .startsWith(filterBy.toLowerCase())
       )
+  
+  // effect is executed immediately after rendering    
+  const hook = () => {
+    console.log('effect')
+    axios.get('http://localhost:3001/persons')
+         .then(response => {
+            console.log('promise fulfilled')
+            setPersons(response.data)
+         })
+  }
 
+  useEffect(hook, [])
+
+  console.log('render', persons.length, 'notes')
+  console.log('notes', persons)
+  
   return (
     <div>
       <Title titleText='Phonebook' />  
