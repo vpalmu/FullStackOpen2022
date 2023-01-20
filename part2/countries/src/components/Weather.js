@@ -28,9 +28,9 @@ const Weather = ({ country }) => {
             { weatherData === null
                 ? <p>loading..</p> 
                 : <div>
-                    <p>Weather in {country.capital}: {weatherData.weather[0].description},  { weatherData.main.temp } Celcius</p>
+                    <p>Weather in {country.capital}: { weatherData.main.temp } Celcius</p>
                     <Image imageUrl= { 'http://openweathermap.org/img/wn/' + weatherData.weather[0].icon + '@2x.png' } />
-                    <p>Wind: { weatherData.wind.speed } m/s</p>
+                    <p>Wind: { weatherData.wind.speed } m/s, {weatherData.weather[0].description}</p>
                   </div>
             }
         </>

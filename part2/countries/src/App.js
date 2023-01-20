@@ -1,9 +1,9 @@
 import { useState, useEffect } from 'react'
 import axios from 'axios';
 import React from 'react'
-import Text from './components/Label';
 import Form from './components/Form';
 import Results from './components/Results';
+import Message from './components/Message';
 
 const App = () => {
    // States
@@ -20,7 +20,7 @@ const App = () => {
 
     setCountriesToShow(countries.filter(
       c => c.name.common.toLowerCase()
-                        .startsWith(newFilterByFieldValue.toLowerCase())
+                        .includes(newFilterByFieldValue.toLowerCase())
     ))
   }
 
@@ -36,19 +36,26 @@ const App = () => {
   }
 
   useEffect(fetchCountriesHook, [])
-  
+   
   console.log('rendering App..')
-  console.log('countriesToShow:', countriesToShow.length)
+  
+  const tooManyResults = countriesToShow.length > MAX_RESULT_SIZE
+  const isSearching = filterBy.length > 0
+
+  console.log('countriesToShow', countriesToShow.length)
+  console.log('filterBy:', `'${filterBy}'`)
+  console.log('tooManyResults', tooManyResults)
 
   return (
     <div>
       <Form filterBy={filterBy} 
             onFilterByEdit={filterByOnChangeEventHandler} 
       />
-      { 
-        countriesToShow.length > MAX_RESULT_SIZE
-          ? <Text content='Too many matches, specify another filter'/>
-          : <Results countriesToShow={ countriesToShow } />
+      { isSearching
+        ? tooManyResults
+          ? <Message content='Too many matches, specify another filter' />
+          : <Results countriesToShow={ countriesToShow } /> 
+        : <p></p>
       }
     </div>
   )
