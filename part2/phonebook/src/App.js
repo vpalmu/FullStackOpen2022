@@ -2,41 +2,136 @@ import { useState, useEffect } from 'react'
 import React from 'react'
 import Filter from './components/Filter'
 import Form from './components/Form'
-import Person from './components/Person'
 import Title from './components/Title'
-import axios from 'axios'
+import Button from './components/Button'
+import Notification from './components/Notification'
+import personService from './services/persons'
+
 
 const App = () => {
   // States
-  const [persons, setPersons] = useState([])
+  const [persons, setPersons] = useState(null)
   const [newName, setNewName] = useState('')
   const [newNumber, setNewNumber] = useState('')
-  const [nextId, setNextId] = useState(5)
   const [filterBy, setFilterBy] = useState('')
+  const [message, setMessage] = useState(null)
+  const [isError, setIsError] = useState(null)
 
-  // Events
-  const addPersonOnClickHandler = (event) => {
+  function nameAlreadyExists(personList, newName) {
+    return personList.some(p => p.name === newName)
+  }
+
+  function numberHasChanged(personList, newName, newNumber) {
+    return personList.some(p => p.name === newName && p.number !== newNumber)
+  }
+  
+  function askToConfirmNumberUpdate(name, number) {
+    return window.confirm(`${name} is already added to phonebook, replace the old number with a new one ${number} ?`)
+  }
+
+  function showMessage(message, isError = false) {
+    setIsError(isError)
+    setMessage(message)
+
+    setTimeout(() => { 
+      setMessage(null) 
+      setIsError(null)
+    }, 3000)
+  }
+
+  function createNewEntry(name, number) {
+    const personToCreate = {
+      // let the server handle the ID field
+      name,
+      number
+    }
+
+    personService
+      .create(personToCreate)
+      .then(createdPerson => {
+        console.log(createdPerson)
+        setPersons(persons.concat(createdPerson))
+        setNewName('')
+        setNewNumber('')
+        showMessage(`Added '${createdPerson.name}'`)
+      })
+      .catch(error => {
+        showMessage(`Error '${error}' when adding person '${personToCreate.name}' `, true)
+      })
+  }
+
+  function updateEntry(personToUpdate) {
+    personService.update(personToUpdate)
+                 .then(updatedPerson => {
+                    const newPersonsList = updatePersonsList(persons, updatedPerson)
+                    setPersons(newPersonsList)
+                 })
+                 .catch(error => {
+                  console.log(error)
+                  showMessage(`Information of '${personToUpdate.name}' has already been removed from server`, true)
+                })
+  }
+
+  function updatePersonsList(currentPersonsList, update) {
+    // search for the person that had number updated
+    const newPersonsList = currentPersonsList.map(p => {
+      if (p.id === update.id) {
+        // update the number
+        p.number = update.number
+      }
+      return p;
+    })
+    return newPersonsList
+  }
+
+  // Event handlers
+  const addPersonEventHandler = (event) => {
     event.preventDefault()
 
-    if (persons.some(person => person.name === newName)) {
-      alert(`${newName} is already added to phonebook`)
+    if (numberHasChanged(persons, newName, newNumber)) {
+      console.log(`${newName}, ${newNumber} is already added to phonebook, but number has changed`)
+      
+      if (askToConfirmNumberUpdate(newName, newNumber))
+      {
+        // get the existing data for the person to be updated
+        const personToUpdate = persons.find(person => person.name === newName)
+        personToUpdate.number = newNumber
+
+        // update number in existing entry 
+        updateEntry(personToUpdate)
+        showMessage(`Information of ${personToUpdate.name} has been successfully updated`)
+        return 
+      }
+      return // no updates
+    }
+    
+    if (nameAlreadyExists(persons, newName)) {
+      showMessage(`'${newName}' already exists in the phonebook`)
+
       return
     }
 
-    if (persons.some(person => person.number === newNumber)) {
-      alert(`${newNumber} is already added to phonebook`)
-      return
+    createNewEntry(newName, newNumber)
+  }
+
+  const removePersonEventHandler = (personToRemove) => {
+    console.log('removePerson: ', personToRemove.name)
+    if (window.confirm(`Do you really want to remove ' ${personToRemove.name}' ?`)) {
+      // remove person here
+      personService
+        .remove(personToRemove.id).then(() => {
+          showMessage(`'${personToRemove.name}' has been removed from the phonebook`)
+        })
+        .catch(error => {
+          console.log(error)
+          showMessage(`Information of '${personToRemove.name}' has already been removed from server`, true)
+        })
+      
+      // remove the person from staeful in-memory array
+      const newListOfPersons = persons.filter(person => person.id !== personToRemove.id)
+      setPersons(newListOfPersons)
+      
     }
-    
-    const personObject = {
-      id: nextId,
-      name: newName,
-      number: newNumber
-    }
-    setPersons(persons.concat(personObject))
-    setNextId(nextId + 1)
-    setNewName('')
-    setNewNumber('')
   }
 
   const nameOnChangeEventHandler = (event) => {
@@ -50,31 +145,38 @@ const App = () => {
   const filterByOnChangeEventHandler = (event) => {
     setFilterBy(event.target.value)
   }
-
-  const personsToShow = filterBy.length === 0 
-      ? persons
-      : persons.filter(
-          person => person.name.toLowerCase()
-                               .startsWith(filterBy.toLowerCase())
-      )
   
   // effect is executed immediately after rendering    
   const hook = () => {
-    console.log('effect')
-    axios.get('http://localhost:3001/persons')
-         .then(response => {
-            console.log('promise fulfilled')
-            setPersons(response.data)
-         })
+    console.log('calling API..')
+
+    personService
+      .getAll()
+      .then(personlist => {
+        console.log('Api retuned ', personlist.length, ' persons')
+        setPersons(personlist)
+      })
   }
 
   useEffect(hook, [])
-
-  console.log('render', persons.length, 'notes')
-  console.log('notes', persons)
   
+  if (!persons) {
+    console.log('initial render App with persons = null, wait for useEffect to fetch persons data..')   
+    return(null) 
+  }
+
+   // rendering code
+  const personsToShow = filterBy.length === 0 
+      ? persons
+      : persons.filter(
+          person => person.name.toLowerCase().startsWith(filterBy.toLowerCase())
+      )
+
+  console.log(`render App with ${persons.length} persons`)
+
   return (
     <div>
+      <Notification message={message} isErrorMessage={isError} /> 
       <Title titleText='Phonebook' />  
       <Filter filterByCriteria={filterBy} handleFilterEvent={filterByOnChangeEventHandler} />
       <Title titleText='Add a new' />
@@ -82,13 +184,21 @@ const App = () => {
             number={newNumber} 
             onNameEdit={nameOnChangeEventHandler} 
             onNumberEdit={numberOnChangeEventHandler} 
-            onAddClick={addPersonOnClickHandler} 
+            onAddClick={addPersonEventHandler} 
       />
       <Title titleText='Numbers' />
       <ul>
-        {personsToShow.map(person =>
-          <Person key={person.id} name={person.name} number={person.number}/>
-        )}
+        {
+          personsToShow.map(person => {
+            const buttonId = person.id + 'Button'
+            return(
+              <li className="note" key={person.id}>
+                <Button key={buttonId} buttonText='delete' handleClick={() => removePersonEventHandler(person)} /> {person.name} {person.number} 
+              </li>
+            )
+          }
+         )
+        }
       </ul>
     </div>
   )
