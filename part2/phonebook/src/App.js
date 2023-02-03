@@ -88,7 +88,15 @@ const App = () => {
   const addPersonEventHandler = (event) => {
     event.preventDefault()
 
-    if (numberHasChanged(persons, newName, newNumber)) {
+    const numberIsSame = !numberHasChanged(persons, newName, newNumber)
+
+    if (nameAlreadyExists(persons, newName) && numberIsSame) {
+      showMessage(`'${newName}' already exists in the phonebook`)
+
+      return
+    }
+
+    if (!numberIsSame) {
       console.log(`${newName}, ${newNumber} is already added to phonebook, but number has changed`)
       
       if (askToConfirmNumberUpdate(newName, newNumber))
@@ -105,11 +113,7 @@ const App = () => {
       return // no updates
     }
     
-    if (nameAlreadyExists(persons, newName)) {
-      showMessage(`'${newName}' already exists in the phonebook`)
-
-      return
-    }
+    
 
     createNewEntry(newName, newNumber)
   }
